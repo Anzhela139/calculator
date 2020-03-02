@@ -1,3 +1,15 @@
 body {
 font-family: 'Montserrat', 'Arial', sans-serif;
 }
+
+button {
+    appearance: none;
+    outline: none;
+    border: none;
+    border-radius: 5%;
+    background-color: #4169E1;
+    -webkit-box-shadow: 5px 5px 5px 3px rgba(39,77,179,0.35);
+    -moz-box-shadow: 5px 5px 5px 3px rgba(39,77,179,0.35);
+    box-shadow: 5px 5px 5px 3px rgba(39,77,179,0.35);
+    padding: 10px 20px;
+}
