@@ -12,4 +12,11 @@ button {
     -moz-box-shadow: 5px 5px 5px 3px rgba(39,77,179,0.35);
     box-shadow: 5px 5px 5px 3px rgba(39,77,179,0.35);
     padding: 10px 20px;
+    color:#fff;
+    margin-right: 10px;
+    margin-bottom: 20px;
+}
+
+.active {
+    border: 3px solid #00FFFF;
 }
