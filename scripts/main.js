@@ -85,13 +85,17 @@ class Calculator {
             default: 
                 return;
         }
-        this.currOperand = result;
+        this.currOperand = this.truncated(result);
         this.operation = undefined;
         this.prevOperand = '';
     }
 
     getDisplayNumber(num) {
         return String(num).replace(/\d{1,3}(?=(\d{3})+(?!\d))/g, '$&,');
+    }
+
+    truncated(num) {
+        return Math.trunc(num * 100) / 100;
     }
 
     updateDisplay () {
