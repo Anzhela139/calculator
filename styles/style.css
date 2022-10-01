@@ -8,16 +8,24 @@
     padding: 0;
     margin: 0;
     background: linear-gradient(to right, #00AAFF, #00FF6C);
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .calculator-grid {
+    position: relative;
     display: grid;
     justify-content: center;
     align-content: center;
     max-height: 100vh;
     height: 100%;
     grid-template-columns: repeat(4, 100px);
-    grid-template-rows: minmax(120px, auto) repeat(5, 100px);
+    grid-template-rows: minmax(80px, 15vh) repeat(6, 90px);
   }
   
   .calculator-grid > button {
