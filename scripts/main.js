@@ -39,22 +39,26 @@ class Calculator {
         this.currOperand = '';
     }
 
-    chooseUnoOperation(operation) {
-        const curr = parseFloat(this.currOperand);
+    computeUnoOperation(operation) {
+        this.operation = operation;
+        let curr = parseFloat(this.currOperand);
         if(this.currOperand === '') return;
+        let result = 0;
         switch (this.operation) {
             case 'x2':
-                Math.pow(curr, 2);
+                result = Math.pow(curr, 2);
                 break;
             case '√':
-                Math.sqrt(curr);
+                result = Math.sqrt(curr);
+                if (curr < 0) throw new Error('it\'s impossible. Try something else.');
                 break;
             case '+/-':
-                curr = -curr;
+                result = String(-curr);
+                break;
             default: 
                 return;
         }
-        this.currOperand = curr;
+        this.currOperand = result;
         this.operation = undefined;
         this.prevOperand = '';
     }
@@ -75,6 +79,7 @@ class Calculator {
                 result = prev * curr;
                 break;
             case '÷':
+                if (curr === 0) throw new Error('it\'s impossible. Try something else.');
                 result = prev / curr;
                 break;
             default: 
@@ -113,7 +118,7 @@ $operationButtons.forEach(button => {
 
 $unoOperationButtons.forEach(button => {
     button.addEventListener('click', () => {
-        calculator.chooseUnoOperation(button.innerText);
+        calculator.computeUnoOperation(button.innerText);
         calculator.updateDisplay();
     })
 })
