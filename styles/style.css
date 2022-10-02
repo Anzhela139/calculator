@@ -1,0 +1,146 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  background: url(./5111869.svg),
+              linear-gradient(to right, #00AAFF, #00FF6C);
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wrapper {
+  position: relative;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  max-height: 100vh;
+  height: 100%;
+  grid-template-columns: repeat(4, 100px);
+  grid-template-rows: minmax(80px, 15vh) repeat(6, 90px);
+}
+
+.wrapper button {
+  cursor: pointer;
+  font-size: 2rem;
+  border: 1px solid white;
+  outline: none;
+  background-color: rgba(255, 255, 255, .75);
+  backdrop-filter: blur(3px);
+}
+
+.wrapper button:hover,
+.active {
+  background-color: rgba(255, 255, 255, .9);
+}
+
+.span-two {
+  grid-column: span 2;
+}
+
+.output {
+  grid-column: 1 / -1;
+  background-color: rgba(0, 0, 0, .75);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  flex-direction: column;
+  padding: 10px;
+  word-wrap: break-word;
+  word-break: break-all;
+  backdrop-filter: blur(3px);
+}
+
+.output .prev-operand {
+  color: rgba(255, 255, 255, .75);
+  font-size: 1.5rem;
+}
+
+.output .curr-operand {
+  color: white;
+  font-size: 2.5rem;
+}
+
+.wrapper button:nth-child(4) {
+  order: 9;
+}
+
+.wrapper button:nth-child(5) {
+  order: 2;
+}
+
+.wrapper button:nth-child(6) {
+  order: 3;
+}
+
+.wrapper button:nth-child(7) {
+  order: 4;
+}
+
+.wrapper button:nth-child(8) {
+  order: 6;
+}
+
+.wrapper button:nth-child(9) {
+  order: 6;
+}
+
+.wrapper button:nth-child(10) {
+  order: 6;
+}
+
+.wrapper button:nth-child(11) {
+  order: 7;
+}
+
+.wrapper button:nth-child(12) {
+  order: 7;
+}
+
+.wrapper button:nth-child(13) {
+  order: 7;
+}
+
+.wrapper button:nth-child(14) {
+  order: 10;
+}
+
+.wrapper button:nth-child(15) {
+  order: 5;
+}
+
+.wrapper button:nth-child(16) {
+  order: 6;
+}
+
+.wrapper button:nth-child(17) {
+  order: 7;
+}
+
+.wrapper button:nth-child(18) {
+  order: 8;
+}
+
+.wrapper button:nth-child(19) {
+  order: 9;
+}
+
+.wrapper button:nth-child(20) {
+  order: 10;
+}
+
+.wrapper button:nth-child(21) {
+  order: 11;
+}
+
+.wrapper button:nth-child(22) {
+  order: 11;
+}
