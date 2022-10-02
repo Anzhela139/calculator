@@ -1,3 +1,5 @@
+@import 'typography.css';
+
 *, *::before, *::after {
   box-sizing: border-box;
   font-family: 'Montserrat', sans-serif;
@@ -6,7 +8,7 @@
 body {
   padding: 0;
   margin: 0;
-  background: url(./5111869.svg),
+  background: url('./images/5111869.svg'),
               linear-gradient(to right, #00AAFF, #00FF6C);
   height: 100vh;
   max-height: 100vh;
