@@ -1,52 +1,68 @@
 import createStore from './store/index.js';
+import CalcKey from './components/button.js';
 
 const body = new Vue({
   el: '#calculator',
   store: createStore(),
-  data: {
-    previousOperand: '',
-    readyToReset: false,
-    previousOperand: '',
-    operation: undefined,
+  components: {
+    CalcKey
+  },
+  mounted() {
+    document.addEventListener('keydown', this.onKeyboard.bind(this));
   },
   computed: {
     ...Vuex.mapGetters([
-      'getCurrentOperand'
+      'getCurrentOperand',
+      'getPreviousOperand',
+      'getReadyToReset',
+      'getOperation'
     ]),
     ...Vuex.mapState({
       currentOperand: state => state.currentOperand,
+      previousOperand: state => state.previousOperand,
+      readyToReset: state => state.readyToReset,
+      operation: state => state.operation
     })
   },
   methods: {
     ...Vuex.mapActions([
       'setCurrentOperand',
+      'setPreviousOperand',
+      'setReadyToReset',
+      'setOperation'
     ]),
     clear() {
-      this.$store.commit('setCurrentOperand', 0);
-      this.previousOperand = '';
-      this.operation = undefined;
+      this.$store.dispatch('setCurrentOperand', 0);
+      this.$store.dispatch('setPreviousOperand', 0);
+      this.$store.dispatch('setOperation', undefined);
     },
     delete() {
-      if (this.$store.state.currentOperand.length === 1) return this.$store.state.currentOperand = '0'
-      this.$store.commit('setCurrentOperand', this.$store.state.currentOperand.toString().slice(0, -1));
+      if (this.getCurrentOperand.length === 1) return this.$store.dispatch('setCurrentOperand', 0);
+
+      this.$store.commit('setCurrentOperand', this.getCurrentOperand.toString().slice(0, -1));
+      console.log(this.getCurrentOperand.toString().slice(0, -1))
     },
     appendNumber(number) {
-      if (number === '.' && this.$store.state.currentOperand.includes('.')) return;
-      this.$store.commit('setCurrentOperand', this.$store.state.currentOperand.toString() + number.toString());
+      console.log(this.getCurrentOperand.toString() + number.toString(),number === '.' && this.getCurrentOperand.includes('.'))
+      if (number === '.' && this.getCurrentOperand.includes('.')) return;
+      this.$store.dispatch('setCurrentOperand', this.getCurrentOperand.toString() + number.toString())
     },
     chooseOperation(operation) {
-      if (this.$store.state.currentOperand === '0') return;
-      if (this.previousOperand !== '' && this.previousOperand !== '') {
+      if (this.getCurrentOperand === '0') return;
+      if (this.getPreviousOperand !== '') {
         this.compute();
       }
-      this.operation = operation;
-      this.previousOperand = this.$store.state.currentOperand;
-      this.$store.commit('setCurrentOperand', 0);
+
+      this.$store.dispatch('setOperation', operation);
+      this.$store.dispatch('setPreviousOperand', this.getCurrentOperand);
+      console.log(this.getCurrentOperand , this.getPreviousOperand)
+
+      this.$store.dispatch('setCurrentOperand', 0);
     },
     compute() {
       let computation;
-      const prev = parseFloat(this.previousOperand.replace(/[^\d\.]/gi, ''));
-      const current = parseFloat(this.$store.state.currentOperand);
+      const prev = parseFloat(this.getPreviousOperand.replace(/[^\d\.]/gi, ''));
+      const current = parseFloat(this.getCurrentOperand);
       if (isNaN(prev) || isNaN(current)) return;
       switch (this.operation) {
         case '+':
@@ -64,23 +80,18 @@ const body = new Vue({
         case 'x2':
           computation = Math.pow(current, prev);
           break
-        // case '.':
-        //   computation = `${prev}.${current}`;
-        //   break; 
         default:
           return;
       }
       console.log(computation)
-      this.readyToReset = true;
-      this.$store.commit('setCurrentOperand', computation);
-      this.operation = undefined;
-      this.previousOperand = '';
+
+      this.setOperationResult(computation);
     },
     computeUnoOperation(operation) {
-      this.operation = operation;
+      this.$store.dispatch('setOperation', operation);
 
-      let curr = parseFloat(this.currentOperand.replace(/[^\d\.]/gi, ''));
-      if (this.currentOperand === '') return;
+      let curr = parseFloat(this.getCurrentOperand.replace(/[^\d\.]/gi, ''));
+      if (this.getCurrentOperand === '') return;
       let result;
       switch (operation) {
         case '√':
@@ -98,116 +109,114 @@ const body = new Vue({
         default:
           return;
       }
-      this.readyToReset = true;
-      this.$store.commit('setCurrentOperand', result);
-      this.operation = undefined;
-      this.previousOperand = '';
+
+      this.setOperationResult(result);
+    },
+    setOperationResult(result) {
+      this.$store.dispatch('setReadyToReset', true);
+      this.$store.dispatch('setCurrentOperand', result);
+      this.$store.dispatch('setOperation', undefined);
+      this.$store.dispatch('setPreviousOperand', '');
     },
     getDisplayNumber(num) {
-      return String(num).replace(/^0/, '').replace(/,/gi, '').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-    },
+      const rounded = Math.round(parseFloat(String(num).replace(/[^\d\.]/gi, '')) * 100) / 100;
 
-    truncated(num) {
-      return Math.trunc(num * 100) / 100;
+      return `${String(rounded).replace(/^0/, '').replace(/,/gi, '').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}${/\.$/.test(num) ? '.' : ''}`;
     },
     updateDisplay() {
-      this.$store.commit('setCurrentOperand',
-        (this.getDisplayNumber(this.$store.state.currentOperand) !== '')
-          ? this.getDisplayNumber(this.$store.state.currentOperand)
-          : '0')
+      this.$store.dispatch('setCurrentOperand',
+        this.getDisplayNumber(this.getCurrentOperand) || '0');
 
-      if (this.operation != null) {
-        this.previousOperand =
-          `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`
-      } else {
-        this.previousOperand = ''
-      }
+      this.$store.dispatch('setPreviousOperand', 
+            this.getOperation != null 
+            ? `${this.getDisplayNumber(this.getPreviousOperand)} ${this.operation}` 
+            : '');
     },
     onNumberUpdate(event) {
       const btn = event.target;
-      if (this.previousOperand === "" &&
-        this.$store.state.currentOperand !== "" &&
-        this.readyToReset) {
-          this.$store.commit('setCurrentOperand', 0);
-        this.readyToReset = false;
+      this.setActiveKey(btn);
+      if (this.getPreviousOperand === "" &&
+        this.getCurrentOperand !== "" &&
+        this.getReadyToReset) {
+
+        this.$store.dispatch('setCurrentOperand', 0);
+        this.$store.dispatch('setReadyToReset', false);
       }
 
       this.appendNumber(btn.innerText)
-      activeKey(btn);
       this.updateDisplay();
     },
     onOperationBtn(event) {
       const btn = event.target;
+      this.setActiveKey(btn);
       this.chooseOperation(btn.innerText);
       this.updateDisplay();
     },
-    onEquals() {
+    onEquals(event) {
+      const btn = event.target;
+      this.setActiveKey(btn);
       this.compute();
       this.updateDisplay();
     },
-    onAllClear() {
+    onAllClear(event) {
+      const btn = event.target;
+      this.setActiveKey(btn);
       this.clear();
       this.updateDisplay();
     },
-    onDelete() {
+    onDelete(event) {
+      const btn = event.target;
+      this.setActiveKey(btn);
       this.delete();
       this.updateDisplay();
     },
     onUnoOperations(event) {
       const btn = event.target;
+      this.setActiveKey(btn);
       this.computeUnoOperation(btn.innerText);
       this.updateDisplay();
+    },
+    setActiveKey(el) {
+      el.classList.add('active');
+    },
+    onKeyboard(event) {
+      if (event.repeat) return;
+      for (let i = 0; i < 10; i++) {
+        if (event.code === `Digit${i + 1}`) {
+          this.appendNumber(i + 1)
+          this.updateDisplay();
+        }
+        console.log(event.code, event.repeat)
+        if (event.code === "Backspace") {
+          this.delete();
+          // this.updateDisplay();
+        }
+      }
     }
   },
   template: `
       <main>
         <div class="wrapper">
           <div class="output">
-            <div class="prev-operand">{{ previousOperand }}</div>
-            <div class="curr-operand">{{ currentOperand }}</div>
+            <div class="prev-operand" data-js-prev-operand="">{{ previousOperand }}</div>
+            <div class="curr-operand" data-js-curr-operand="">{{ currentOperand }}</div>
           </div>
-          <button @click="onDelete" class="span-two delete">DEL</button>
-          <button @click="onAllClear" class="span-two all-clear">AC</button>
-          <button @click="onNumberUpdate">0</button>
-          <button @click="onNumberUpdate">1</button>
-          <button @click="onNumberUpdate">2</button>
-          <button @click="onNumberUpdate">3</button>
-          <button @click="onNumberUpdate">4</button>
-          <button @click="onNumberUpdate">5</button>
-          <button @click="onNumberUpdate">6</button>
-          <button @click="onNumberUpdate">7</button>
-          <button @click="onNumberUpdate">8</button>
-          <button @click="onNumberUpdate">9</button>
-          <button @click="onOperationBtn">+</button>
-          <button @click="onOperationBtn">-</button>
-          <button @click="onOperationBtn">÷</button>
-          <button @click="onOperationBtn">*</button>
-          <button @click="onUnoOperations">.</button>
-          <button @click="onUnoOperations">+/-</button>
-          <button>x
+          <calc-key v-bind:handleClick="onDelete" v-bind:text=" 'DEL' " />
+          <button @click="onAllClear" class="span-two all-clear" @transitionend="removeActiveKey">AC</button>
+          <button v-for="index in 10" :key="index" :data-js-number-operand="index -1"
+            @click="onNumberUpdate" @transitionend="removeActiveKey">{{ index -1 }}</button>
+
+          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="plus">+</button>
+          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="minus">-</button>
+          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="delete">÷</button>
+          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="multiply">*</button>
+          <button @click="onNumberUpdate" @transitionend="removeActiveKey">.</button>
+          <button @click="onUnoOperations" @transitionend="removeActiveKey">+/-</button>
+          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="plus">x
             <sup>x</sup>
           </button>
-          <button @click="onUnoOperations">√</button>
-          <button class="span-two" @click="onEquals">=</button>
+          <button @click="onUnoOperations" @transitionend="removeActiveKey">√</button>
+          <button class="span-two" @click="onEquals" @transitionend="removeActiveKey">=</button>
         </div>
       </main>`
 })
-
-const activeKey = (el) => {
-  el.classList.toggle('active');
-}
-
-const keyWork = (e) => {
-  for (let i = 0; i < 10; i++) {
-    if (e.code === `Digit${i + 1}`) {
-      calculator.appendNumber(i + 1)
-      calculator.updateDisplay();
-    }
-    if (e.code === "Backspace") {
-      calculator.delete();
-      calculator.updateDisplay();
-    }
-  }
-}
-
-document.addEventListener('keydown', keyWork)
