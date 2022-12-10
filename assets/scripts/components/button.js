@@ -1,13 +1,32 @@
-import removeActiveKeyMixin from './../mixins/utils.js';
+import { removeActiveKeyMixin, setActiveKeyMixin } from './../mixins/utils.js';
 
 const CalcKey = {
-    mixins: [removeActiveKeyMixin],
     props: {
-        text: String,
-        handleClick: Function
+        handleClick: {
+            type: Function,
+            default: () => {}
+        },
+        isTwoKey: {
+            type: Boolean,
+            default: false
+        },
+        dataAttrs: {
+            type: [String, Number],
+            default: ''
+        },
+    },
+    mixins: [removeActiveKeyMixin, setActiveKeyMixin],
+    methods: {
+        onClick(event) {      
+            const btn = event.target;
+            this.setActiveKey(btn);
+            this.handleClick(btn.dataset['js']);
+        }
     },
     template: `
-        <button @click="handleClick" class="span-two" @transitionend="removeActiveKey">{{ text }}</button>
+        <button @click="onClick" :class="{'span-two': isTwoKey}" :data-js="dataAttrs" @transitionend="removeActiveKey">
+            <slot></slot>
+        </button>
     `
 }
 

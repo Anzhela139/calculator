@@ -11,7 +11,7 @@ function setReadyToReset({ commit }, data) {
 }
 
 function setOperation({ commit }, data) {
-    commit('set_ready_to_reset', data);
+    commit('set_operation', data);
 }
 
 export default {

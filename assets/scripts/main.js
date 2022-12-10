@@ -40,10 +40,8 @@ const body = new Vue({
       if (this.getCurrentOperand.length === 1) return this.$store.dispatch('setCurrentOperand', 0);
 
       this.$store.commit('setCurrentOperand', this.getCurrentOperand.toString().slice(0, -1));
-      console.log(this.getCurrentOperand.toString().slice(0, -1))
     },
     appendNumber(number) {
-      console.log(this.getCurrentOperand.toString() + number.toString(),number === '.' && this.getCurrentOperand.includes('.'))
       if (number === '.' && this.getCurrentOperand.includes('.')) return;
       this.$store.dispatch('setCurrentOperand', this.getCurrentOperand.toString() + number.toString())
     },
@@ -55,35 +53,34 @@ const body = new Vue({
 
       this.$store.dispatch('setOperation', operation);
       this.$store.dispatch('setPreviousOperand', this.getCurrentOperand);
-      console.log(this.getCurrentOperand , this.getPreviousOperand)
 
       this.$store.dispatch('setCurrentOperand', 0);
     },
     compute() {
       let computation;
       const prev = parseFloat(this.getPreviousOperand.replace(/[^\d\.]/gi, ''));
-      const current = parseFloat(this.getCurrentOperand);
+      const current = parseFloat(this.getCurrentOperand.replace(/[^\d\.]/gi, ''));
+
       if (isNaN(prev) || isNaN(current)) return;
-      switch (this.operation) {
-        case '+':
+      switch (this.getOperation) {
+        case 'plus':
           computation = prev + current;
           break
-        case '-':
+        case 'minus':
           computation = prev - current;
           break
-        case '*':
+        case 'multiply':
           computation = prev * current;
           break
-        case '÷':
+        case 'delete':
           computation = prev / current;
           break
-        case 'x2':
+        case 'exponentiation':
           computation = Math.pow(current, prev);
           break
         default:
           return;
       }
-      console.log(computation)
 
       this.setOperationResult(computation);
     },
@@ -127,14 +124,12 @@ const body = new Vue({
       this.$store.dispatch('setCurrentOperand',
         this.getDisplayNumber(this.getCurrentOperand) || '0');
 
-      this.$store.dispatch('setPreviousOperand', 
-            this.getOperation != null 
-            ? `${this.getDisplayNumber(this.getPreviousOperand)} ${this.operation}` 
-            : '');
+      this.$store.dispatch('setPreviousOperand',
+        this.getOperation != null
+          ? `${this.getDisplayNumber(this.getPreviousOperand)} ${this.operation}`
+          : '');
     },
-    onNumberUpdate(event) {
-      const btn = event.target;
-      this.setActiveKey(btn);
+    onNumberUpdate(btnInfo) {
       if (this.getPreviousOperand === "" &&
         this.getCurrentOperand !== "" &&
         this.getReadyToReset) {
@@ -143,54 +138,51 @@ const body = new Vue({
         this.$store.dispatch('setReadyToReset', false);
       }
 
-      this.appendNumber(btn.innerText)
+      this.appendNumber(btnInfo);
       this.updateDisplay();
     },
-    onOperationBtn(event) {
-      const btn = event.target;
-      this.setActiveKey(btn);
-      this.chooseOperation(btn.innerText);
+    onOperationBtn(btnInfo) {
+      this.chooseOperation(btnInfo);
       this.updateDisplay();
     },
-    onEquals(event) {
-      const btn = event.target;
-      this.setActiveKey(btn);
+    onEquals() {
       this.compute();
       this.updateDisplay();
     },
-    onAllClear(event) {
-      const btn = event.target;
-      this.setActiveKey(btn);
+    onAllClear() {
       this.clear();
       this.updateDisplay();
     },
-    onDelete(event) {
-      const btn = event.target;
-      this.setActiveKey(btn);
+    onDelete() {
       this.delete();
       this.updateDisplay();
     },
-    onUnoOperations(event) {
-      const btn = event.target;
-      this.setActiveKey(btn);
-      this.computeUnoOperation(btn.innerText);
+    onUnoOperations(btnInfo) {
+      this.computeUnoOperation(btnInfo);
       this.updateDisplay();
-    },
-    setActiveKey(el) {
-      el.classList.add('active');
     },
     onKeyboard(event) {
       if (event.repeat) return;
-      for (let i = 0; i < 10; i++) {
-        if (event.code === `Digit${i + 1}`) {
-          this.appendNumber(i + 1)
-          this.updateDisplay();
-        }
-        console.log(event.code, event.repeat)
-        if (event.code === "Backspace") {
-          this.delete();
-          // this.updateDisplay();
-        }
+
+      if (event.code.match(/^(Digit)/) || event.code.match(/^(Numpad)/)) {
+        this.appendNumber(parseInt(event.code.replace(/\D/gi, '')))
+        this.updateDisplay();
+      }
+
+      if (event.code === 'Equal' && event.shiftKey) {
+        this.onEquals();
+      }
+
+      if (event.code === 'Equal' && !event.shiftKey) {
+        this.onOperationBtn('plus');
+      }
+
+      if (event.code === 'Minus' && !event.shiftKey) {
+        this.onOperationBtn('minus');
+      }
+
+      if (event.code === "Backspace") {
+        this.onDelete();
       }
     }
   },
@@ -198,25 +190,22 @@ const body = new Vue({
       <main>
         <div class="wrapper">
           <div class="output">
-            <div class="prev-operand" data-js-prev-operand="">{{ previousOperand }}</div>
+            <div class="prev-operand" data-js-prev-operand="">{{ getPreviousOperand }}</div>
             <div class="curr-operand" data-js-curr-operand="">{{ currentOperand }}</div>
           </div>
-          <calc-key v-bind:handleClick="onDelete" v-bind:text=" 'DEL' " />
-          <button @click="onAllClear" class="span-two all-clear" @transitionend="removeActiveKey">AC</button>
-          <button v-for="index in 10" :key="index" :data-js-number-operand="index -1"
-            @click="onNumberUpdate" @transitionend="removeActiveKey">{{ index -1 }}</button>
-
-          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="plus">+</button>
-          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="minus">-</button>
-          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="delete">÷</button>
-          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="multiply">*</button>
-          <button @click="onNumberUpdate" @transitionend="removeActiveKey">.</button>
-          <button @click="onUnoOperations" @transitionend="removeActiveKey">+/-</button>
-          <button @click="onOperationBtn" @transitionend="removeActiveKey" data-js-operation="plus">x
-            <sup>x</sup>
-          </button>
-          <button @click="onUnoOperations" @transitionend="removeActiveKey">√</button>
-          <button class="span-two" @click="onEquals" @transitionend="removeActiveKey">=</button>
+          <calc-key :handleClick="onDelete" :isTwoKey="true">DEL</calc-key>
+          <calc-key :handleClick="onAllClear" :isTwoKey="true">AC</calc-key>
+          <calc-key v-for="index in 10" :key="index" 
+            :handleClick="onNumberUpdate" :dataAttrs="index -1">{{ index -1 }}</calc-key>
+          <calc-key :handleClick="onOperationBtn" :dataAttrs=" 'plus' ">+</calc-key>
+          <calc-key :handleClick="onOperationBtn" :dataAttrs=" 'minus' ">-</calc-key>
+          <calc-key :handleClick="onOperationBtn" :dataAttrs=" 'delete' ">÷</calc-key>
+          <calc-key :handleClick="onOperationBtn" :dataAttrs=" 'multiply' ">*</calc-key>
+          <calc-key :handleClick="onNumberUpdate" :dataAttrs=" 'float' ">.</calc-key>
+          <calc-key :handleClick="onUnoOperations" :dataAttrs=" 'negative' ">+/-</calc-key>
+          <calc-key :handleClick="onOperationBtn" :dataAttrs=" 'exponentiation' ">x<sup>x</sup></calc-key>
+          <calc-key :handleClick="onUnoOperations" :dataAttrs=" 'square' ">√</calc-key>
+          <calc-key :handleClick="onEquals" :isTwoKey="true" :dataAttrs=" 'equals' ">=</calc-key>
         </div>
       </main>`
 })
