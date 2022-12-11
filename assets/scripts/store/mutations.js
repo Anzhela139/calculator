@@ -1,5 +1,4 @@
 const set_current_operand = (state, data) => {
-    console.log(data)
     state.currentOperand = data;
 };
 

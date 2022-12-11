@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/anzhelaAbitova/calculator#readme",
   "dependencies": {
-    "vue": "^2.7.14"
+    "vue": "^2.7.14",
+    "vuex": "^2.5.0"
   }
 }
