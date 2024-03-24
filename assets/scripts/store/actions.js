@@ -1,22 +1,22 @@
-function setCurrentOperand({ commit }, data) {
-    commit('set_current_operand', data);
+function setCurrentOperandAction({ commit }, data) {
+    commit('setCurrentOperand', data);
 }
 
-function setPreviousOperand({ commit }, data) {
-    commit('set_previous_operand', data);
+function setPreviousOperandAction({ commit }, data) {
+    commit('setPreviousOperand', data);
 }
 
-function setReadyToReset({ commit }, data) {
-    commit('set_ready_to_reset', data);
+function setReadyToResetAction({ commit }, data) {
+    commit('setReadyToReset', data);
 }
 
-function setOperation({ commit }, data) {
-    commit('set_operation', data);
+function setOperationAction({ commit }, data) {
+    commit('setOperation', data);
 }
 
 export default {
-    setCurrentOperand,
-    setPreviousOperand,
-    setReadyToReset,
-    setOperation
+    setCurrentOperandAction,
+    setPreviousOperandAction,
+    setReadyToResetAction,
+    setOperationAction
 };
